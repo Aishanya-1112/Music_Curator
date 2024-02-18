@@ -227,7 +227,7 @@ def recommend_newly_released_top_50():
     
 def Creators_choice():
     try:
-        playlist_id = "37i9dQZF1EJC7ByoDEI8QY"  # Playlist ID for Trending Top 50 Global
+        playlist_id = "7jQopH0MS9DFvR79CKxeMf"  # Playlist ID for Trending Top 50 Global
         playlist = sp.playlist_tracks(playlist_id, limit=50)
         playlist_tracks = []
         for item in playlist['items']:
