@@ -1,7 +1,3 @@
-
-# client_credentials_manager = SpotifyClientCredentials(client_id='f0d483d34b2c49f491f43fe5447d393a', client_secret='3d0706813c1e4e9d96e191322b2c4b9a')
-
-
 import streamlit as st
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -177,6 +173,28 @@ def recommend_music_by_genre(genre):
     except spotipy.SpotifyException as e:
         st.error(f"Error occurred while fetching playlists: {e}")
         return None
+def recommend_trending_top_50_india():
+    try:
+        playlist_id = "37i9dQZEVXbLZ52XmnySJg"  # Playlist ID for Trending Top 50 Global
+        playlist = sp.playlist_tracks(playlist_id, limit=50)
+        playlist_tracks = []
+        for item in playlist['items']:
+            track = item['track']
+            if track is not None:
+                artists = ", ".join([artist['name'] for artist in track['artists']])
+                playlist_tracks.append({
+                    'name': track['name'],
+                    'album': track['album']['name'],
+                    'artists': artists,
+                    'release_date': track['album']['release_date'],
+                    'preview_url': track['preview_url'],
+                    'spotify_url': track['external_urls']['spotify'],  # Link to the song on Spotify
+                    'poster': track['album']['images'][0]['url'] if track['album']['images'] else None
+                })
+        return playlist_tracks
+    except spotipy.SpotifyException as e:
+        st.error(f"Error occurred while fetching playlists: {e}")
+        return None
     
     
 def recommend_trending_top_50_global():
@@ -227,7 +245,7 @@ def recommend_newly_released_top_50():
     
 def Creators_choice():
     try:
-        playlist_id = "7jQopH0MS9DFvR79CKxeMf"  # Playlist ID for Trending Top 50 Global
+        playlist_id = "37i9dQZF1EJC7ByoDEI8QY"  # Playlist ID for Trending Top 50 Global
         playlist = sp.playlist_tracks(playlist_id, limit=50)
         playlist_tracks = []
         for item in playlist['items']:
@@ -250,7 +268,7 @@ def Creators_choice():
     
     
 # User selects recommendation type
-recommendation_type = st.selectbox("Select recommendation type:", ("Trending Top 50", "By Genre", "By Artist","Newly Released","Creators Choice"), key="recommendation_type")
+recommendation_type = st.selectbox("Select recommendation type:", ("Trending Top 50 India","Trending Top 50 Global", "By Genre", "By Artist","Newly Released","Creators Choice"), key="recommendation_type")
 
 
 
@@ -276,7 +294,7 @@ if recommendation_type == "By Artist":
                             if index < num_tracks:
                                 track = recommended_tracks[index]
                                 with cols[j]:
-                                    st.markdown(f"**{index+1}.** <span style='border: 0.3px solid #464344; border-radius: 10px; padding: 3px 5px; font-size: 20px; background-color: #464343; color: white;'>{track['name']}</span>", unsafe_allow_html=True)
+                                    st.markdown(f"{index+1}.** <span style='border: 0.3px solid #464344; border-radius: 10px; padding: 3px 5px; font-size: 20px; background-color: #464343; color: white;'>{track['name']}</span>", unsafe_allow_html=True)
                                     st.write(f"   Album: {track['album']}")
                                     st.write(f"   Release Date: {track['release_date']}")
                                     if track['poster']:
@@ -310,7 +328,7 @@ elif recommendation_type == "By Genre":
                 if index < num_tracks:
                     track = recommended_tracks[index]
                     with cols[j]:
-                            st.markdown(f"**{index+1}.** <span style='border: 0.3px solid #464344; border-radius: 10px; padding: 3px 5px; font-size: 20px; background-color: #464343; color: white;'>{track['name']}</span>", unsafe_allow_html=True)
+                            st.markdown(f"{index+1}.** <span style='border: 0.3px solid #464344; border-radius: 10px; padding: 3px 5px; font-size: 20px; background-color: #464343; color: white;'>{track['name']}</span>", unsafe_allow_html=True)
                             st.write(f"   Album: {track['album']}")
                             st.write(f"   Release Date: {track['release_date']}")
                             if track['poster']:
@@ -327,7 +345,7 @@ elif recommendation_type == "By Genre":
                     st.markdown('<div style="margin-top: 20px;"></div>', unsafe_allow_html=True)  # Add margin between rows
     else:
         st.write("No tracks found for the selected genre.")
-elif recommendation_type == "Trending Top 50":
+elif recommendation_type == "Trending Top 50 Global":
     st.write("### Trending Top 50 Global")
     trending_tracks = recommend_trending_top_50_global()
     if trending_tracks:
@@ -341,7 +359,38 @@ elif recommendation_type == "Trending Top 50":
                 if index < num_tracks:
                     track = trending_tracks[index]
                     with cols[j]:
-                            st.markdown(f"**{index+1}.** <span style='border: 0.3px solid #464344; border-radius: 10px; padding: 3px 5px; font-size: 20px; background-color: #464343; color: white;'>{track['name']}</span>", unsafe_allow_html=True)
+                            st.markdown(f"{index+1}.** <span style='border: 0.3px solid #464344; border-radius: 10px; padding: 3px 5px; font-size: 20px; background-color: #464343; color: white;'>{track['name']}</span>", unsafe_allow_html=True)
+                            st.write(f"   Album: {track['album']}")
+                            st.write(f"   Release Date: {track['release_date']}")
+                            if track['poster']:
+                                # Wrap st.image() within an anchor tag
+                                st.markdown(f'<a href="{track["spotify_url"]}" target="_blank"><img src="{track["poster"]}" width="500" length="500"></a>', unsafe_allow_html=True)
+                            if track['preview_url']:
+                                # Embed audio player with custom HTML code
+                                st.write(f'<audio src="{track["preview_url"]}" controls style="width:500px"></audio>', unsafe_allow_html=True)
+                            else:
+                                st.write("No preview available for this track.")
+                    if j < num_cols - 1:
+                        st.markdown('<div style="margin-left: 20px;"></div>', unsafe_allow_html=True)  # Add margin between columns
+                if i < num_rows - 1:
+                    st.markdown('<div style="margin-top: 20px;"></div>', unsafe_allow_html=True)  # Add margin between rows
+    else:
+        st.write("No trending tracks found.")
+elif recommendation_type == "Trending Top 50 India":
+    st.write("### Trending Top 50 India")
+    tracks_ind = recommend_trending_top_50_india()
+    if tracks_ind:
+        num_tracks = len(tracks_ind)
+        num_cols = 2  # Number of tracks in each row
+        num_rows = (num_tracks + num_cols - 1) // num_cols  # Calculate number of rows needed
+        for i in range(num_rows):
+            cols = st.columns(num_cols)
+            for j in range(num_cols):
+                index = i * num_cols + j
+                if index < num_tracks:
+                    track = tracks_ind[index]
+                    with cols[j]:
+                            st.markdown(f"{index+1}.** <span style='border: 0.3px solid #464344; border-radius: 10px; padding: 3px 5px; font-size: 20px; background-color: #464343; color: white;'>{track['name']}</span>", unsafe_allow_html=True)
                             st.write(f"   Album: {track['album']}")
                             st.write(f"   Release Date: {track['release_date']}")
                             if track['poster']:
@@ -372,7 +421,7 @@ elif recommendation_type == "Newly Released":
                 if index < num_tracks:
                     track = new_tracks[index]
                     with cols[j]:
-                            st.markdown(f"**{index+1}.** <span style='border: 0.3px solid #464344; border-radius: 10px; padding: 3px 5px; font-size: 20px; background-color: #464343; color: white;'>{track['name']}</span>", unsafe_allow_html=True)
+                            st.markdown(f"{index+1}.** <span style='border: 0.3px solid #464344; border-radius: 10px; padding: 3px 5px; font-size: 20px; background-color: #464343; color: white;'>{track['name']}</span>", unsafe_allow_html=True)
                             st.write(f"   Album: {track['album']}")
                             st.write(f"   Release Date: {track['release_date']}")
                             if track['poster']:
@@ -403,7 +452,7 @@ elif recommendation_type == "Creators Choice":
                 if index < num_tracks:
                     track = creator_tracks[index]
                     with cols[j]:
-                            st.markdown(f"**{index+1}.** <span style='border: 0.3px solid #464344; border-radius: 10px; padding: 3px 5px; font-size: 20px; background-color: #464343; color: white;'>{track['name']}</span>", unsafe_allow_html=True)
+                            st.markdown(f"{index+1}.** <span style='border: 0.3px solid #464344; border-radius: 10px; padding: 3px 5px; font-size: 20px; background-color: #464343; color: white;'>{track['name']}</span>", unsafe_allow_html=True)
                             st.write(f"   Album: {track['album']}")
                             st.write(f"   Release Date: {track['release_date']}")
                             if track['poster']:
